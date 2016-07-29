@@ -1,0 +1,8 @@
+{
+    "src": {
+        "SOURCES": {
+            "ninja.cc": "-Ofast -marm -finline-limit=501",
+            "build.cc": "-Ofast -marm -finline-limit=502"
+        }
+    }
+}
