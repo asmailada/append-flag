@@ -1,15 +1,50 @@
-#########################################################################################
-# Read in json. 																		#
-# Read in toolchain.ninja. 																#
-#	Create new rules for every opt files. 												#
-#																						#
-# Traverse all ninja files. 															#
-#	Find the tartget opt files. 														#
-#	Substitude the compiling rules. 													#
-#																						#
-# Change the flag only won't affect the ninja build checking							#
-#																						#
-#########################################################################################
+
+# Copyright (C) 2016 Skymizer. All Rights Reserved.
+#
+# You may not use this file except in compliance with the License.
+#
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Author: asmailada
+# Last update time: 2016/08/01
+#
+# Description: 
+# 		It is a tool for ninja build system that modified *.ninja files to append cflags 
+#		on source files which user concerned.
+#		You first need a json file to describe the target source files as below:
+#				{
+#					"../../cc/layers": {
+#				        "SOURCES": {
+#				            "video_layer.cc": "-O3 -O3 -O3"
+#				        }
+#				    }	
+#				}
+#		Usage:
+#		[default]
+#		python ninja_modifier.py -in test.json
+#		
+#		[specifying a directory to work on]
+#		python ninja_modifier.py -in test.json -C path/you/want
+#
+#		Flow:
+#		1.  Read in json file
+#		2.  Traverse the specific directory(or cwd) and its subdirectory to find all 
+#			*.ninja files
+#		3.  Inside *.ninja files, find current building rules as reference and add new 
+#			rules according to the description in the json file.
+#
+#		Problems:
+#		1.  More effecient addRule() should be implement. (skip unchange *.ninja files)
+#		2.  Need to come up with a more organized style.
+#
+#
+#
+
 from __future__ import print_function
 
 import sys
@@ -89,7 +124,14 @@ def checkFile(filename,opt_flag,rule,target_file):
 					"""Path should be relative to the -C dir"""
 					if target in lines[i]:
 						target_rule = lines[i].split()[2]
-						target_file[target] = target_rule
+						"""TODO: multiple target rules!"""
+						if target in target_file:
+							if not(target_rule in target_file[target]):
+								target_file[target].append(target_rule)
+						else:
+							target_file[target] = [target_rule]
+
+
 			i+=1
 		rule[filename] = cur_rule
 def createRuleName(filename,rule_name):
@@ -119,21 +161,24 @@ def addRule(opt_flag,rule,target_file):
 					"""Add rule"""
 					if isRule == False:
 						for file in target_file:
-							if target_file[file] in rule[toolchain]:
-								cur_rule = target_file[file]
-								new_rule = createRuleName(file,cur_rule)
-								print("change rule... ")
-								cur_command = rule[toolchain][cur_rule]
-								new_command = cur_command[0].split("-c")[0] + " " +opt_flag[file] + " -c " + cur_command[0].split("-c")[1]
-								print("rule "+new_rule,file=fw)
-								print(new_command,file=fw)
-								print("\trule "+new_rule)
-								print("\t",new_command)
+							target_rule = 0
+							while target_rule < len(target_file[file]):
+								if target_file[file][target_rule] in rule[toolchain]:
+									cur_rule = target_file[file][target_rule]
+									new_rule = createRuleName(file,cur_rule)
+									print("change rule... ")
+									cur_command = rule[toolchain][cur_rule]
+									new_command = cur_command[0].split("-c")[0] + " " +opt_flag[file] + " -c " + cur_command[0].split("-c")[1]
+									print("rule "+new_rule,file=fw)
+									print(new_command,file=fw)
+									print("\trule "+new_rule)
+									print("\t",new_command)
 
-								j = 1
-								while j < len(cur_command):
-									print(cur_command[j],file=fw)
-									j+=1
+									j = 1
+									while j < len(cur_command):
+										print(cur_command[j],file=fw)
+										j += 1
+								target_rule += 1
 						isRule = True
 					print(lines[i],file=fw)
 
@@ -144,18 +189,23 @@ def addRule(opt_flag,rule,target_file):
 				elif lines[i].startswith("build "):
 					"""Change build statement"""
 					isBuild = False
+					"""TODO : multiple target rules for one file."""
 					for file in target_file:
+						target_rule = 0
 						if file in lines[i]:
-							"""assume the rule already exists"""
-							cur_rule = target_file[file]
-							new_rule = createRuleName(file,cur_rule)
-							idx = lines[i].find(cur_rule)
-							if idx > -1:
-								print("change build... "+file)
-								new_build = lines[i][0:idx] + new_rule + lines[i][(idx+len(cur_rule)):]
-								print(new_build,file=fw)
-								print("\t",new_build)
-								isBuild = True
+							while target_rule < len(target_file[file]):
+								"""assume the rule already exists"""
+								if lines[i].split()[2].startswith(target_file[file][target_rule]):
+									cur_rule = target_file[file][target_rule]
+									new_rule = createRuleName(file,cur_rule)
+									idx = lines[i].find(cur_rule)
+									if idx > -1:
+										print("change build... "+file)
+										new_build = lines[i][0:idx] + new_rule + lines[i][(idx+len(cur_rule)):]
+										print(new_build,file=fw)
+										print("\t",new_build)
+										isBuild = True
+								target_rule += 1
 					if not(isBuild):
 						print(lines[i],file=fw)
 				else:
@@ -164,19 +214,12 @@ def addRule(opt_flag,rule,target_file):
 			fw.close()
 		print("\n")
 		"""rm `original.ninja` && mv `_temp.ninja` to `original.ninja`"""
-		"""
-		idx1 = filename.find("/")
-		idx2 = 0
-		while idx1 > -1:
-			print(idx1," ",idx2)
-			idx2 = idx1
-			idx1 = filename.find("/",idx2+1)
-		"""
+
 		"""print("The dir is: ",os.listdir(filename[0:idx2]),"\n")"""
-		#os.remove(filename)
-		#print("Remove ",filename)
-		#os.rename(filename_temp,filename)
-		#print("Rename ",filename_temp," ",filename)
+		os.remove(filename)
+		print("Remove ",filename)
+		os.rename(filename_temp,filename)
+		print("Rename ",filename_temp," ",filename)
 		"""print("The dir after removal of path : %s" %os.listdir(filename[0:idx2]),"\n")"""
 
 
@@ -227,7 +270,7 @@ target_file = {}
 with open(json_file_name) as json_file:
     json_data = json.load(json_file)
     #print(json.dumps(json_data, sort_keys=True, indent=4))
-    #json_print(json_data)
+    json_print(json_data)
     json_to_dict(json_data,opt_flag)
 
     """
@@ -252,12 +295,7 @@ addRule(opt_flag,rule,target_file)
 """
 for x in rule:
 	print(x,"\n\t",rule[x])
-"""
+
 for x in target_file:
 	print(x,"\n\t",target_file[x])
-
-
-"""Create rules in toolchain.ninja."""
-"""Change the rules."""
-
-
+"""
