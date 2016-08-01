@@ -53,11 +53,9 @@ import string
 import json
 
 
-#################
-#				#
-#	funcitons	#
-#				#
-#################
+##################				
+#	funcitons	 #
+##################
 
 """Print error message"""
 def eprint(*args, **kwargs):
@@ -225,9 +223,7 @@ def addRule(opt_flag,rule,target_file):
 
 
 #################
-#				#
 #	  main		#
-#				#
 #################
 """TODO:Change working directory not funtionable"""
 
