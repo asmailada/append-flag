@@ -93,6 +93,20 @@ def json_to_dict(json_data,dict):
 	for x in dict:
 		print(x,'\n\t',dict[x]) #TODO: '{a} {b}'.format(a=x, b=y)
 
+def isComment(line):
+	return line.startswith("#")
+
+def isRule(line):
+	return line.startswith("rule ")
+
+def isBuild(line):
+	return line.startswith("build ")
+
+def isRuleBlock(line):
+	return not(line.startswith("rule ") or line.startswith("build ") or line.startswith("pool ") or line.startswith("subninja "))
+
+def isAinB(test,target):
+	return test in target
 
 """Constrcut rule[toolchain][rule_name]=[rules], target_file[file]=rule_name"""
 def checkFile(filename,opt_flag,rule,target_file):
@@ -102,29 +116,29 @@ def checkFile(filename,opt_flag,rule,target_file):
 		i = 0
 		cur_rule = {}
 		while i < len(lines):
-			if lines[i].startswith("#") :
+			if isComment(lines[i]) :
 				i+=1
 				continue
 
-			if lines[i].startswith("rule "):
+			if isRule(lines[i]):
 				"""Rules should be cache by rule_name, rule_name is specific."""
 				rule_list = []
 				rule_name = lines[i][5:]
 
-				while not(lines[i+1].startswith("rule ") or lines[i+1].startswith("build ") or lines[i+1].startswith("pool ") or lines[i+1].startswith("subninja ")):
+				while isRuleBlock(lines[i+1]):
 					rule_list.append(lines[i+1])
 					i+=1
 				
 				cur_rule[rule_name] = rule_list
 
-			elif lines[i].startswith("build "):
+			elif isBuild(lines[i]):
 				for target in opt_flag:
-					"""Path should be relative to the -C dir"""
+					"""Path should be relative to the ninja -C dir"""
 					if target in lines[i]:
 						target_rule = lines[i].split()[2]
-						"""TODO: multiple target rules!"""
-						if target in target_file:
-							if not(target_rule in target_file[target]):
+						"""multiple target rules!"""
+						if isAinB(target, target_file):
+							if not(isAinB(target_rule, target_file[target])):
 								target_file[target].append(target_rule)
 						else:
 							target_file[target] = [target_rule]
@@ -132,6 +146,7 @@ def checkFile(filename,opt_flag,rule,target_file):
 
 			i+=1
 		rule[filename] = cur_rule
+
 def createRuleName(filename,rule_name):
 	new_filename = filename.replace("/","_")
 	new_filename = new_filename.replace(".","_")
@@ -147,21 +162,21 @@ def addRule(opt_flag,rule,target_file):
 		with open(filename,"r") as f:
 			fw = open(filename_temp,"w")
 			lines = f.read().splitlines()
-			isRule = False
+			isrule = False
 			i = 0
 			while i < len(lines):
-				if lines[i].startswith("#") :
+				if isComment(lines[i]) :
 					print(lines[i],file=fw)
 					i+=1
 					continue
 
-				if lines[i].startswith("rule "):
+				if isRule(lines[i]) :
 					"""Add rule"""
-					if isRule == False:
+					if isrule == False:
 						for file in target_file:
 							target_rule = 0
 							while target_rule < len(target_file[file]):
-								if target_file[file][target_rule] in rule[toolchain]:
+								if isAinB(target_file[file][target_rule], rule[toolchain]):
 									cur_rule = target_file[file][target_rule]
 									new_rule = createRuleName(file,cur_rule)
 									print("change rule... ")
@@ -177,20 +192,20 @@ def addRule(opt_flag,rule,target_file):
 										print(cur_command[j],file=fw)
 										j += 1
 								target_rule += 1
-						isRule = True
+						isrule = True
 					print(lines[i],file=fw)
 
-					while not(lines[i+1].startswith("rule ") or lines[i+1].startswith("build ") or lines[i+1].startswith("pool ") or lines[i+1].startswith("subninja ")):
+					while isRuleBlock(lines[i+1]):
 						print(lines[i+1],file=fw)
 						i+=1
 
-				elif lines[i].startswith("build "):
+				elif isBuild(lines[i]):
 					"""Change build statement"""
-					isBuild = False
+					built = False
 					"""TODO : multiple target rules for one file."""
 					for file in target_file:
 						target_rule = 0
-						if file in lines[i]:
+						if isAinB(file, lines[i]):
 							while target_rule < len(target_file[file]):
 								"""assume the rule already exists"""
 								if lines[i].split()[2].startswith(target_file[file][target_rule]):
@@ -202,9 +217,9 @@ def addRule(opt_flag,rule,target_file):
 										new_build = lines[i][0:idx] + new_rule + lines[i][(idx+len(cur_rule)):]
 										print(new_build,file=fw)
 										print("\t",new_build)
-										isBuild = True
+										built = True
 								target_rule += 1
-					if not(isBuild):
+					if not(built):
 						print(lines[i],file=fw)
 				else:
 					print(lines[i],file=fw)
@@ -266,7 +281,7 @@ target_file = {}
 with open(json_file_name) as json_file:
     json_data = json.load(json_file)
     #print(json.dumps(json_data, sort_keys=True, indent=4))
-    json_print(json_data)
+    #json_print(json_data)
     json_to_dict(json_data,opt_flag)
 
     """
