@@ -32,9 +32,11 @@ test.json
 
 ### Usage
 Notice:
+
 `
 Before using this tool, please run `gn gen out/Default` to checkout all files.
 `
+
 Due to the machenism of ninja build system in building Chromium OS, running `ninja` will make an automatically update of all *.ninja files while source files had changes, which will cause a rewrite of all *.ninja files if we use this tool without first checkout all files.
 
 Default:
