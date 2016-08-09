@@ -14,7 +14,7 @@
  
  Last update time: 2016/08/01
 
- ### Introduction
+### Introduction
 
  It is a tool for ninja build system that modified *.ninja files.
  Allow user to add any cflags for specific source file.
