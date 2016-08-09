@@ -14,7 +14,8 @@
  
  Last update time: 2016/08/01
 
- # Introduction
+ ### Introduction
+
  It is a tool for ninja build system that modified *.ninja files.
  Allow user to add any cflags for specific source file.
  Using python.
@@ -49,11 +50,9 @@ to make sure everything is up-to-date.
 python ninja_modifier.py -C chromium/src/ -in test.json
 `
 
-```sh
--C     The working directory for Ninja-Modifier to scan all *.ninja files. This will make a changing for working directory to chromium/src/
+`-C`     The working directory for Ninja-Modifier to scan all *.ninja files. This will make a changing for working directory to chromium/src/
 
--in     The input json file. Ninja-Modifier will read this file after changing working directory. Therefore, the file path needed to be relative to -C path.
-```
+`-in`    The input json file. Ninja-Modifier will read this file after changing working directory. Therefore, the file path needed to be relative to -C path.
 
 
 ### Flow
