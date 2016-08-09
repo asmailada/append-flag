@@ -20,7 +20,7 @@
 
 ### Running Ninja-Modifier
 
-1. First, you need a json file to indicate the relation between target source files and a  set of cflags as below:
+		1. First, you need a json file to indicate the relation between target source files and a  set of cflags as below:
 		
 ```sh		
 test.json
@@ -33,13 +33,16 @@ test.json
 			    }
 			}
 ```
-2. Before running Ninja-Modifier while building Chromium Project, notice that you need to run 
+
+		2. Before running Ninja-Modifier while building Chromium Project, notice that you need to run 
+
 `
 gn gen out/Default target
 `
 
 to make sure everything is up-to-date.
-3. Run Ninja-Modifier 
+
+		3. Run Ninja-Modifier 
 
 `
 python ninja_modifier.py -C chromium/src/ -in test.json
