@@ -37,21 +37,21 @@ test.json
 2. Before running Ninja-Modifier while building Chromium Project, notice that you need to run 
 
 `
-	gn gen out/Default target
+gn gen out/Default target
 `
 
-	to make sure everything is up-to-date.
+to make sure everything is up-to-date.
 
 
 3. Run Ninja-Modifier 
 
 `
-	python ninja_modifier.py -C chromium/src/ -in test.json
+python ninja_modifier.py -C chromium/src/ -in test.json
 `
 
-`-C`	The working directory for Ninja-Modifier to scan all *.ninja files. This will make a changing for working directory to chromium/src/
+**`-C`**	The working directory for Ninja-Modifier to scan all *.ninja files. This will make a changing for working directory to chromium/src/
 
-`-in`	The input json file. Ninja-Modifier will read this file after changing working directory. Therefore, the file path needed to be relative to -C path.
+**`-in`**	The input json file. Ninja-Modifier will read this file after changing working directory. Therefore, the file path needed to be relative to -C path.
 
 
 ### Flow
