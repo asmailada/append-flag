@@ -33,16 +33,12 @@ test.json
 			    }
 			}
 ```
-
 2. Before running Ninja-Modifier while building Chromium Project, notice that you need to run 
-
 `
 gn gen out/Default target
 `
 
 to make sure everything is up-to-date.
-
-
 3. Run Ninja-Modifier 
 
 `
