@@ -62,6 +62,12 @@ python ninja_modifier.py -C chromium/src/ -in test.json
 		3. Traverse CWD to find all `*.ninja` files and cache the rules, build settings.
 		4. According to the description in json file, create specific rules and rewrite the build settings for each source file.
 
+### Notice
+
+**Before using this tool, please run `gn gen out/Default` to checkout all files.**
+
+Due to the machenism of ninja build system in building Chromium OS, running `ninja` will make an automatically update of all *.ninja files while source files had changes, which will cause a rewrite of all *.ninja files if we use this tool without first checkout all files.
+
 
 ### Problems
 		1.  More effecient addRule() should be implement. (skip unchange *.ninja files)
