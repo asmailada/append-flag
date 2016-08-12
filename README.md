@@ -1,5 +1,5 @@
 # ninja-modifier
-----------------
+
  Copyright (C) 2016 Skymizer. All Rights Reserved.
 
  You may not use this file except in compliance with the License.
