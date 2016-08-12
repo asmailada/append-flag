@@ -245,8 +245,8 @@ def addRule(opt_flag,rule,target_file):
 workingDir = "./"
 if len(sys.argv) < 2:
 	eprint("No input argument.")
-	eprint('Usage:')
-	eprint('-C\tdesired working directory')
+	eprint('Usage: python ninja_modifier.py [options]')
+	eprint('-C\tdirectory to find all *.ninja files')
 	eprint('-in\tinput json file, which path is relative to -C')
 	sys.exit()
 else:
