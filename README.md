@@ -1,4 +1,5 @@
-# ninja-modifier
+ninja-modifier
+==============
 
  Copyright (C) 2016 Skymizer. All Rights Reserved.
 
@@ -20,7 +21,7 @@ Introduction
 
  It is a tool for ninja build system that modified *.ninja files.Allow user to add any cflags for specific source file, using python.
 
-### Running Ninja-Modifier
+Running Ninja-Modifier
 --------------------------
 
  * First, you need a json file to indicate the relation between target source files and a  set of cflags as below:
@@ -56,14 +57,14 @@ python ninja_modifier.py -C chromium/src/ -in test.json
 **`-in`**	The input json file. Ninja-Modifier will read this file after changing working directory. Therefore, the file path needed to be relative to -C path.
 
 
-### Flow
+Flow
 --------
 		1. Ninja-Modifier first changing the working directory to `-C` argument.
 		2. Read in json file.
 		3. Traverse CWD to find all `*.ninja` files and cache the rules, build settings.
 		4. According to the description in json file, create specific rules and rewrite the build settings for each source file.
 
-### Notice
+Notice
 ----------
 
 **Before using this tool, please run `gn gen out/Default` to checkout all files.**
@@ -71,7 +72,7 @@ python ninja_modifier.py -C chromium/src/ -in test.json
 Due to the machenism of ninja build system in building Chromium OS, running `ninja` will make an automatically update of all *.ninja files while source files had changes, which will cause a rewrite of all *.ninja files if we use this tool without first checkout all files.
 
 
-### Problems
+Problems
 ------------
 		1.  More effecient addRule() should be implement. (skip unchange *.ninja files)
 		2.  Need to come up with a more organized style.
